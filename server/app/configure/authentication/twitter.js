@@ -2,9 +2,9 @@ var express = require('express');
 var Flutter = require('flutter');
 
 var flutter = new Flutter({
-  consumerKey: 'MY CONSUMER KEY',
-  consumerSecret: 'MY CONSUMER SECRET',
-  loginCallback: 'http://my-host/twitter/callback',
+  consumerKey: 'QxauZaB9yvfIFNAvSHe47Otwh',
+  consumerSecret: 'iXidgcn3bLlOKD0vIVJQWAqZ9O80CdXBmVgsak8N0ve9WeOdIf',
+  loginCallback: 'http://my-host/twitter/callback', //add login callbcack
 
   authCallback: function(req, res, next) {
     if (req.error) {
