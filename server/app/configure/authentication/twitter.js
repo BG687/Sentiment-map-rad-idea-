@@ -1,58 +1,30 @@
-'use strict';
+var express = require('express');
+var Flutter = require('flutter');
 
-var passport = require('passport');
-var TwitterStrategy = require('passport-twitter').Strategy;
+var flutter = new Flutter({
+  consumerKey: 'MY CONSUMER KEY',
+  consumerSecret: 'MY CONSUMER SECRET',
+  loginCallback: 'http://my-host/twitter/callback',
 
-module.exports = function (app, db) {
+  authCallback: function(req, res, next) {
+    if (req.error) {
+      return console.log("authCallback error", req.error);
+    }
 
-    var User = db.model('user');
+    var accessToken = req.session.oauthAccessToken;
+    var secret = req.session.oauthAccessTokenSecret;
 
-    var twitterConfig = app.getValue('env').TWITTER;
+    // Store away oauth credentials here
 
-    var twitterCredentials = {
-        consumerKey: twitterConfig.consumerKey,
-        consumerSecret: twitterConfig.consumerSecret,
-        callbackUrl: twitterConfig.callbackUrl
-    };
+    // Redirect user back to your app
+    res.redirect('/back/to/app'); //set redirect path
+  }
+});
 
-    var createNewUser = function (token, tokenSecret, profile) {
-        return User.create({
-            twitter_id: profile.id
-        });
-    };
+var app = express();
 
-    var verifyCallback = function (token, tokenSecret, profile, done) {
+app.get('/twitter/connect', flutter.connect);
 
-        UserModel.findOne({
-            where: {
-                twitter_id: profile.id
-            }
-        }).exec()
-            .then(function (user) {
-                if (user) { // If a user with this twitter id already exists.
-                    return user;
-                } else { // If this twitter id has never been seen before and no user is attached.
-                    return createNewUser(token, tokenSecret, profile);
-                }
-            })
-            .then(function (user) {
-                done(null, user);
-            })
-            .catch(function (err) {
-                console.error('Error creating user from Twitter authentication', err);
-                done(err);
-            });
+// URL used in loginCallback above
+app.get('/twitter/callback', flutter.auth);
 
-    };
-
-    passport.use(new TwitterStrategy(twitterCredentials, verifyCallback));
-
-    app.get('/auth/twitter', passport.authenticate('twitter'));
-
-    app.get('/auth/twitter/callback',
-        passport.authenticate('twitter', {failureRedirect: '/login'}),
-        function (req, res) {
-            res.redirect('/');
-        });
-
-};
